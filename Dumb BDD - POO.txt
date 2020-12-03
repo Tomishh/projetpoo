@@ -1,0 +1,205 @@
+/*==============================================================*/
+/* Nom de SGBD :  MySQL 5.0                                     */
+/* Date de création :  30/11/2020 10:26:27                      */
+/*==============================================================*/
+
+
+drop table if exists ADRESSE;
+
+drop table if exists CATALOGUE;
+
+drop table if exists CLIENT;
+
+drop table if exists COMMANDE;
+
+drop table if exists CONTIENT;
+
+drop table if exists COULEUR;
+
+drop table if exists DATE_DE_PAIEMENT;
+
+drop table if exists MODE_DE_REGLEMENT;
+
+drop table if exists NATURE;
+
+drop table if exists PERSONNEL;
+
+drop table if exists TARIF;
+
+/*==============================================================*/
+/* Table : ADRESSE                                              */
+/*==============================================================*/
+foreign_key_checks = 1
+create table ADRESSE
+(
+   RUE                  char(5),
+   CODE_POSTALE         char(200),
+   VILLE                char(256),
+   IDAD                 int not null auto_increment,
+   NUMERO               int,
+   CLI_NUMERO           int,
+   primary key (IDAD)
+);
+
+/*==============================================================*/
+/* Table : CATALOGUE                                            */
+/*==============================================================*/
+create table CATALOGUE
+(
+   PRIX                 float,
+   SEUIL_REAP           int,
+   TAUX_TVA             int,
+   NATURE               char(256),
+   REFCATA              char(12) not null,
+   IDNAT                int not null,
+   QUANTITE             int,
+   NOMART               char(256),
+   primary key (REFCATA)
+);
+
+/*==============================================================*/
+/* Table : CLIENT                                               */
+/*==============================================================*/
+create table CLIENT
+(
+   NUMERO               int not null,
+   NOMC                 char(256),
+   PRENOMC              char(256),
+   AD_FACTURATION       char(256),
+   DATE_NAISSANCE       date,
+   primary key (NUMERO)
+);
+
+/*==============================================================*/
+/* Table : COMMANDE                                             */
+/*==============================================================*/
+create table COMMANDE
+(
+   DATE_LIVRAISON       date,
+   DATE_EMISSION        date,
+   DATE_REGLEMENT       date,
+   ID                   int not null auto_increment,
+   IDPERSO              int not null,
+   NUMERO               int not null,
+   REFERENCE            char(2),
+   primary key (ID)
+);
+
+/*==============================================================*/
+/* Table : CONTIENT                                             */
+/*==============================================================*/
+create table CONTIENT
+(
+   ID                   int not null,
+   REFCATA              char(12) not null,
+   QUANTITE_ARTICLES    int,
+   primary key (ID, REFCATA)
+);
+
+/*==============================================================*/
+/* Table : COULEUR                                              */
+/*==============================================================*/
+create table COULEUR
+(
+   IDCOL                int not null auto_increment,
+   NOMCOL               char(256),
+   primary key (IDCOL)
+);
+
+/*==============================================================*/
+/* Table : DATE_DE_PAIEMENT                                     */
+/*==============================================================*/
+create table DATE_DE_PAIEMENT
+(
+   ID_PAIEMENT          int not null auto_increment,
+   ID                   int not null,
+   ID_MODE              int not null,
+   DATES                date,
+   MONTANT              float(8,2),
+   primary key (ID_PAIEMENT)
+);
+
+/*==============================================================*/
+/* Table : MODE_DE_REGLEMENT                                    */
+/*==============================================================*/
+create table MODE_DE_REGLEMENT
+(
+   ID_MODE              int not null auto_increment,
+   NOMREG               char(256),
+   primary key (ID_MODE)
+);
+
+/*==============================================================*/
+/* Table : NATURE                                               */
+/*==============================================================*/
+create table NATURE
+(
+   NOMNAT               char(256),
+   IDNAT                int not null auto_increment,
+   primary key (IDNAT)
+);
+
+/*==============================================================*/
+/* Table : PERSONNEL                                            */
+/*==============================================================*/
+create table PERSONNEL
+(
+   ADRESSE_MAIL         char(256),
+   DATE_EMBAUCHE        date,
+   NOMP                 char(256),
+   PRENOMP              char(256),
+   IDPERSO              int not null auto_increment,
+   IDSUP                numeric,
+   primary key (IDPERSO)
+);
+
+/*==============================================================*/
+/* Table : TARIF                                                */
+/*==============================================================*/
+create table TARIF
+(
+   IDTARIF              int not null auto_increment,
+   IDCOL                int not null,
+   IDNAT                int not null,
+   REFCATA              char(12) not null,
+   PRIX_UNITAIRE        float(8,2),
+   NOMTAR               char(256),
+   primary key (IDTARIF)
+);
+
+alter table ADRESSE add constraint FK_ADRESSE_FACTURATION foreign key (CLI_NUMERO)
+      references CLIENT (NUMERO) on delete restrict on update restrict;
+
+alter table ADRESSE add constraint FK_ADRESSE_LIVRAISON foreign key (NUMERO)
+      references CLIENT (NUMERO) on delete restrict on update restrict;
+
+alter table CATALOGUE add constraint FK_EST_DE foreign key (IDNAT)
+      references NATURE (IDNAT) on delete restrict on update restrict;
+
+alter table COMMANDE add constraint FK_PASSE foreign key (NUMERO)
+      references CLIENT (NUMERO) on delete restrict on update restrict;
+
+alter table COMMANDE add constraint FK_PREPARER foreign key (IDPERSO)
+      references PERSONNEL (IDPERSO) on delete restrict on update restrict;
+
+alter table CONTIENT add constraint FK_CONTIENT foreign key (ID)
+      references COMMANDE (ID) on delete restrict on update restrict;
+
+alter table CONTIENT add constraint FK_CONTIENT2 foreign key (REFCATA)
+      references CATALOGUE (REFCATA) on delete restrict on update restrict;
+
+alter table DATE_DE_PAIEMENT add constraint FK_PREVOIS foreign key (ID)
+      references COMMANDE (ID) on delete restrict on update restrict;
+
+alter table DATE_DE_PAIEMENT add constraint FK_REGLER foreign key (ID_MODE)
+      references MODE_DE_REGLEMENT (ID_MODE) on delete restrict on update restrict;
+
+alter table TARIF add constraint FK_A foreign key (REFCATA)
+      references CATALOGUE (REFCATA) on delete restrict on update restrict;
+
+alter table TARIF add constraint FK_AGIS foreign key (IDNAT)
+      references NATURE (IDNAT) on delete restrict on update restrict;
+
+alter table TARIF add constraint FK_AGIS_BIS foreign key (IDCOL)
+      references COULEUR (IDCOL) on delete restrict on update restrict;
+
